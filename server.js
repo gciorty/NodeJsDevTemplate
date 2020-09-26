@@ -4,6 +4,7 @@ const mongoSanitize = require("express-mongo-sanitize");
 const compression = require("compression");
 const helmet = require("helmet");
 const path = require("path");
+const rateLimit = require("express-rate-limit");
 
 // app.use(
 //   cors({
@@ -22,6 +23,22 @@ app.use(express.json({ extended: true, limit: "10kb" }));
 // {
 //     res.sendFile(path.join(__dirname, "/client/build", "index.html"));
 // });
+
+
+// Enable if you're behind a reverse proxy (Heroku, Bluemix, AWS ELB, Nginx, etc)
+// see https://expressjs.com/en/guide/behind-proxies.html
+// app.set('trust proxy', 1);
+
+const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100,
+    message: "Too many requests from this IP"
+});
+
+app.use("/api/", apiLimiter);
+
+// middleware for a route
+// app.use("/api/users/login", apiLimiter, (req, res) => { return res.status(200).json({ message: "success" }) })
 
 app.use((req, res, next) =>
 {
